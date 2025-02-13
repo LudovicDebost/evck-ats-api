@@ -77,9 +77,14 @@ security:
   - SSOAuth: [read]
 servers:
   - url: https://ats.everycheck.com/v1
+tags:
+  - name: Study
+    description: Retrieve study informations
 paths:
   /studies:
     get:
+      tags:
+        - Study
       summary: List studies
       description: Returns a list of studies starting from a specified date (limited to the past 7 days).
       parameters:
@@ -117,6 +122,8 @@ paths:
           description: Unauthorized
   /studies/{uuid}/download:
     get:
+      tags:
+        - Study
       summary: Download study report
       description: Returns a PDF file for the specified study Uuid.
       parameters:

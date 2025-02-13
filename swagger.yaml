@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: EveryCheck ATS
-  description: This API allows integration with Applicant Tracking Systems (ATS) to manage job applications, retrieve study records, and download related documents.
+  description: This API allows integration with Applicant Tracking Systems (ATS) to manage job applications, retrieve assessment records, and download related documents.
   version: 1.0.0
   contact:
     email: contact@everycheck.fr
@@ -16,7 +16,7 @@ components:
           scopes:
             read: Grants read access
   schemas:
-    Study:
+    Assessment:
       type: object
       properties:
         uuid:
@@ -42,11 +42,11 @@ components:
             - `applicant_sealed`: The candidate has filled the forms.
             - `check_finished`: The application's checks has been completed.
             - `check_canceled`: The application's checks has been canceled.
-        experiences:
+        checks:
           type: array
           items:
-            $ref: '#/components/schemas/Experience'
-    Experience:
+            $ref: '#/components/schemas/Check'
+    Check:
       type: object
       properties:
         uuid:
@@ -72,21 +72,46 @@ components:
             - `check_confirmed`: No discrepancy has been found.
             - `check_rejected`: A major discrepancy has been found.
             - `check_unconfirmed`: A minor discrepancy has been found.
-            - `uncheckable`: We're not able to verify this experience.
+            - `uncheckable`: We're not able to verify this check.
 security:
   - SSOAuth: [read]
 servers:
-  - url: https://ats.everycheck.com/v1
+  - url: https://assessment.everycheck.com/v1
 tags:
-  - name: Study
-    description: Retrieve study informations
+  - name: Assessment
+    description: Retrieve assessments informations
 paths:
-  /studies:
+  /assessment:
+    post:
+      tags:
+        - Assessment
+      summary: Create an assessment
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                email:
+                  type: string
+                firstname:
+                  type: string
+                lastname:
+                  type: string
+              required: 
+                - file
+                - email
+      responses:
+        '201':
+          description: A JSON of assessment
     get:
       tags:
-        - Study
-      summary: List studies
-      description: Returns a list of studies starting from a specified date (limited to the past 7 days).
+        - Assessment
+      summary: List assessments
+      description: Returns a list of assessments starting from a specified date (limited to the past 7 days).
       parameters:
         - name: startDate
           in: query
@@ -95,7 +120,7 @@ paths:
             type: string
             format: date
             example: 2025-02-06
-          description: The start date for listing studies (must be within the past 7 days).
+          description: The start date for listing assessments (must be within the past 7 days).
         - name: 'pageToken'
           in: query
           description: Token for the next page
@@ -104,28 +129,28 @@ paths:
             type: string
       responses:
         '200':
-          description: A JSON array of studies
+          description: A JSON array of assessments
           content:
             application/json:
               schema:
                   type: object
                   properties:
-                    studies:
+                    assessments:
                       type: array
                       items:
-                        $ref: '#/components/schemas/Study'
+                        $ref: '#/components/schemas/Assessment'
                     next_page_token:
                       type: string
         '400':
           description: Invalid date parameter
         '401':
           description: Unauthorized
-  /studies/{uuid}/download:
+  /assessment/{uuid}/download:
     get:
       tags:
-        - Study
-      summary: Download study report
-      description: Returns a PDF file for the specified study Uuid.
+        - Assessment
+      summary: Download assessment report
+      description: Returns a PDF file for the specified assessment Uuid.
       parameters:
         - in: path
           name: uuid
@@ -134,16 +159,16 @@ paths:
             type: string
             format: uuid
             example: 6a60093f-87f5-48b6-b82b-3fe308e26f4e
-          description: The uuid of the study to download.
+          description: The uuid of the assessment to download.
       responses:
         '200':
-          description: A PDF file of the study
+          description: A PDF file of the assessment
           content:
             application/pdf:
               schema:
                 type: string
                 format: binary
         '404':
-          description: Study not found
+          description: Assessment not found
         '401':
           description: Unauthorized

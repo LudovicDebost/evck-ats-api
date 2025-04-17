@@ -103,19 +103,21 @@ components:
           type: string
         docs:
           type: array
-          properties:
-            id: 
-              type: string
-              enum:
-                - identity
-                - job
-                - diploma
-                - other
-                - survey
-            amount:
-              type: integer
-            desc:
-              type: string
+          items:
+            type: object
+            properties:
+              id: 
+                type: string
+                enum:
+                  - identity
+                  - job
+                  - diploma
+                  - other
+                  - survey
+              amount:
+                type: integer
+              desc:
+                type: string
     Survey:
       type: object
       properties:

@@ -40,19 +40,26 @@ components:
             - `created`: The application has been received but not yet started.
             - `client_sealed`: The application is started, waiting for applicant filling.
             - `applicant_sealed`: The candidate has filled the forms.
-            - `check_finished`: The application's checks has been completed.
-            - `check_canceled`: The application's checks has been canceled.
+            - `check_finished`: The application's checks have been completed.
+            - `check_canceled`: The application's checks have been canceled.
+        link:
+          type: string
+          format: uri
+          example: https://www.everycheck.com/study/6a60093f-87f5-48b6-b82b-3fe308e26f4e
         checks:
           type: array
           items:
             $ref: '#/components/schemas/Check'
+        survey:
+          type: number
+          description: global survey score
     Check:
       type: object
       properties:
         uuid:
           type: string
           format: uuid
-          example: 6a60093f-87f5-48b6-b82b-3fe308e26f4e
+          example: 378fd87e-579d-48e5-b375-8c84eed85618
         type:
           type: string
           enum:
@@ -73,13 +80,88 @@ components:
             - `check_rejected`: A major discrepancy has been found.
             - `check_unconfirmed`: A minor discrepancy has been found.
             - `uncheckable`: We're not able to verify this check.
+        link:
+          type: string
+          format: uri
+          example: https://www.everycheck.com/audit/378fd87e-579d-48e5-b375-8c84eed85618
+        survey:
+          $ref: '#/components/schemas/Survey'
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+    Package:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          example: 6a60093f-87f5-48b6-b82b-3fe308e26f4e
+        name:
+          type: string
+        docs:
+          type: array
+          properties:
+            id: 
+              type: string
+              enum:
+                - identity
+                - job
+                - diploma
+                - other
+                - survey
+            amount:
+              type: integer
+            desc:
+              type: string
+    Survey:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          example: 6a60093f-87f5-48b6-b82b-3fe308e26f4e
+        firstname:
+          type: string
+        lastname:
+          type: string
+        score:
+          type: number
+        comment:
+          type: string
+          description: comment from the referent
+        responses:
+          type: array
+          items:
+            type: object
+            properties: 
+              question:
+                type: string
+              value:
+                type: string
+              attention:
+                type: boolean
+          example:
+            - question: "What is your favorite color?"
+              value: "Blue"
+            - question: "How old are you?"
+              value: "25"
+              attention: true
+          
 security:
   - SSOAuth: [read]
 servers:
   - url: https://assessment.everycheck.com/v1
+    description: Production server
+  - url: https://assessment.everycheck.info/v1
+    description: Sandbox server
 tags:
   - name: Assessment
-    description: Retrieve assessments informations
+    description: Retrieve assessment informations
+  - name: Security
+  - name: User
 paths:
   /assessment:
     post:
@@ -97,21 +179,42 @@ paths:
                   format: binary
                 email:
                   type: string
+                package:
+                  type: string
+                  format: uuid
+                  description: specify the package for this assessment
+                survey:
+                  type: string
+                  format: uuid
+                  description: specify the survey for this assessment
+                phone:
+                  type: string
                 firstname:
                   type: string
                 lastname:
                   type: string
+                diplomas:
+                  type: string
+                  description: specify the names of the diplomas to be checked
+                jobs:
+                  type: string
+                  description: sspecify the job names to be checked
               required: 
                 - file
                 - email
+                - package
       responses:
         '201':
           description: A JSON of assessment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assessment'
     get:
       tags:
         - Assessment
       summary: List assessments
-      description: Returns a list of assessments starting from a specified date (limited to the past 7 days).
+      description: Returns a list of assessments starting from a specified date (must be within the past 7 days).
       parameters:
         - name: startDate
           in: query
@@ -170,5 +273,54 @@ paths:
                 format: binary
         '404':
           description: Assessment not found
+        '401':
+          description: Unauthorized
+  /security/user:
+    put:
+      tags:
+        - Security
+      summary: Set and replace users allowed to connect
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/User"
+      responses:
+        '200':
+          description: Users list updated
+        '401':
+          description: Unauthorized
+  /user/profile:
+    get:
+      tags:
+        - User
+      summary: List available packages and surveys
+      description: Returns a list of packages and surveys that can be used to specify assessment rules.
+      responses:
+        '200':
+          description: A list of packages
+          content:
+           application/json:
+              schema:
+                  type: object
+                  properties:
+                    packages:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Package'
+                    surveys:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          uuid:
+                            type: string
+                            format: uuid
+                            example: 6a60093f-87f5-48b6-b82b-3fe308e26f4e
+                          name:
+                            type: string
         '401':
           description: Unauthorized

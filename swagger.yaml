@@ -7,14 +7,9 @@ info:
     email: contact@everycheck.fr
 components:
   securitySchemes:
-    SSOAuth:
-      type: oauth2
-      flows:
-        authorizationCode:
-          authorizationUrl: https://example.com/oauth/authorize
-          tokenUrl: https://example.com/oauth/token
-          scopes:
-            read: Grants read access
+    BasicAuth:
+      type: http
+      scheme: basic
   schemas:
     Assessment:
       type: object
@@ -29,19 +24,19 @@ components:
         status:
           type: string
           enum:
-            - created
-            - client_sealed
-            - applicant_sealed
-            - check_finished
-            - check_canceled
+            - Created
+            - ClientSealed
+            - ApplicantSealed
+            - CheckFinished
+            - CheckCanceled
           description: |
             Enum to represent the status of a job application.
             Possible values:
-            - `created`: The application has been received but not yet started.
-            - `client_sealed`: The application is started, waiting for applicant filling.
-            - `applicant_sealed`: The candidate has filled the forms.
-            - `check_finished`: The application's checks have been completed.
-            - `check_canceled`: The application's checks have been canceled.
+            - `Created`: The application has been received but not yet started.
+            - `ClientSealed`: The application is started, waiting for applicant filling.
+            - `ApplicantSealed`: The candidate has filled the forms.
+            - `CheckFinished`: The application's checks have been completed.
+            - `CheckCanceled`: The application's checks have been canceled.
         link:
           type: string
           format: uri
@@ -63,23 +58,30 @@ components:
         type:
           type: string
           enum:
-            - identity
-            - diploma
-            - job
+            - Identity
+            - Diploma
+            - Job
+          description: |
+            Enum to represent the type of a check.
+            Possible values:
+            - `Identity`: An identity.
+            - `Diploma`: A diploma.
+            - `Job`: A job experience.
         outcome:
           type: string
           enum:
-            - check_confirmed
-            - check_rejected
-            - check_unconfirmed
-            - uncheckable
+            - CheckConfirmed
+            - CheckRejected
+            - CheckUnconfirmed
+            - UnCheckable
           description: |
             Enum to represent the status of a check.
+            The value is visible only after a review from a manager.
             Possible values:
-            - `check_confirmed`: No discrepancy has been found.
-            - `check_rejected`: A major discrepancy has been found.
-            - `check_unconfirmed`: A minor discrepancy has been found.
-            - `uncheckable`: We're not able to verify this check.
+            - `CheckConfirmed`: No discrepancy has been found.
+            - `CheckRejected`: A major discrepancy has been found.
+            - `CheckUnconfirmed`: A minor discrepancy has been found.
+            - `UnCheckable`: We're not able to verify this check.
         link:
           type: string
           format: uri
@@ -153,12 +155,14 @@ components:
               attention: true
           
 security:
-  - SSOAuth: [read]
+  - BasicAuth: []
 servers:
   - url: https://assessment.everycheck.com/v1
     description: Production server
   - url: https://assessment.everycheck.info/v1
     description: Sandbox server
+  - url: http://localhost:8000/api/ats/v1
+    description: Development server
 tags:
   - name: Assessment
     description: Retrieve assessment informations
@@ -223,9 +227,9 @@ paths:
           required: true
           schema:
             type: string
-            format: date
-            example: 2025-02-06
-          description: The start date for listing assessments (must be within the past 7 days).
+            format: date-time
+            example: 2006-01-02T15:04:05
+          description: The start date for listing assessments (must be within the past 7 days). Format must be date-time (e.g., 2006-01-02T15:04:05).
         - name: 'pageToken'
           in: query
           description: Token for the next page

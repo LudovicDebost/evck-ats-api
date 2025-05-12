@@ -199,7 +199,7 @@ servers:
     description: Production server
   - url: https://assessment.everycheck.info/v1
     description: Sandbox server
-  - url: http://localhost:8000/api/ats/v1
+  - url: http://localhost:8000/api/ats
     description: Development server
 tags:
   - name: Assessment
@@ -295,8 +295,14 @@ paths:
                     properties:
                       file:
                         type: array
+                        items:
+                          type: string
+                        maxItems: 0
                       email:
                         type: array
+                        items:
+                          type: string
+                        maxItems: 0
                       package:
                         type: object
                         properties:
@@ -344,31 +350,42 @@ paths:
         '400':
           description: Invalid date parameter
           content:
-                application/json:
-                  schema:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  children:
                     type: object
                     properties:
-                      children:
+                      pageToken:
+                        type: array
+                        items:
+                          type: string
+                      startDate:
                         type: object
                         properties:
-                          pageToken:
+                          errors:
                             type: array
                             items:
                               type: string
-                          startDate:
-                            type: object
-                            properties:
-                              errors:
-                                type: array
-                                items:
-                                  type: string
-                                  example: must be within the past 7 days
-                    example:
-                      children:
-                        pageToken: []
-                        startDate:
-                          errors:
-                            - "must be within the past 7 days"
+                              example: must be within the past 7 days
+              examples:
+                missing_date:
+                  summary: Missing required start date
+                  value:
+                    children:
+                      pageToken: []
+                      startDate:
+                        errors:
+                          - "this value should not be blank"
+                bad_date:
+                  summary: Bad start date
+                  value:
+                    children:
+                      pageToken: []
+                      startDate:
+                        errors:
+                          - "must be within the past 7 days"
         '401':
           $ref: '#/components/responses/Unauthorized'
   /assessment/{uuid}/download:
@@ -422,6 +439,15 @@ paths:
       responses:
         '200':
           description: Users list updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: number
+                  updated:
+                     type: number
         '400':
           description: Bad request
           content:
@@ -452,19 +478,17 @@ paths:
                                             type: string
               example:
                 children:
-                  users:
+                  "0":
                     children:
-                      "0":
-                        children:
-                          email:
-                            errors:
-                              - "This value is not a valid Email."
-                          firstname:
-                            errors:
-                              - "lower than min length of 2"
-                          lastname:
-                            errors:
-                              - "higher than max length of 255"
+                      email:
+                        errors:
+                          - "This value is not a valid email."
+                      firstname:
+                        errors:
+                          - "lower than min length of 2"
+                      lastname:
+                        errors:
+                          - "higher than max length of 255"
         '401':
           $ref: '#/components/responses/Unauthorized'
   /user/profile:

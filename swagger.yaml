@@ -169,7 +169,7 @@ components:
           items:
             type: object
             properties:
-              id: 
+              type: 
                 type: string
                 enum:
                   - identity
@@ -423,7 +423,7 @@ paths:
                     example: "Study not found"
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /security/user:
+  /security/users:
     put:
       tags:
         - Security

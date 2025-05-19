@@ -43,14 +43,22 @@ components:
           type: string
           format: uri
           example: https://www.everycheck.com/study/6a60093f-87f5-48b6-b82b-3fe308e26f4e
-          description: URL to access the assessment on everycheck platform
+          description: URL to access the assessment on EveryCheck platform
         checks:
           type: array
           items:
             $ref: '#/components/schemas/Check'
         survey:
-          type: number
-          description: Surveys score
+          type: object
+          properties:
+            score:
+              type: number
+              description: Surveys score
+            link:
+              type: string
+              format: uri
+              example: https://www.everycheck.com/study/6a60093f-87f5-48b6-b82b-3fe308e26f4e/surveys
+              description: URL to access the assessment's surveys on EveryCheck platform
     Check:
       type: object
       properties:
@@ -89,7 +97,7 @@ components:
           type: string
           format: uri
           example: https://www.everycheck.com/audit/378fd87e-579d-48e5-b375-8c84eed85618
-          description: URL to access the check on everycheck platform
+          description: URL to access the check on EveryCheck platform
         survey:
           description: The survey is only available for `Job` type.
           type: object
@@ -411,6 +419,43 @@ paths:
               schema:
                 type: string
                 format: binary
+        '404':
+          description: Assessment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Study not found"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /assessment/{uuid}/surveys/download:
+    get:
+      tags:
+        - Assessment
+      summary: Download assessment's surveys report
+      description: Returns a PDF file for the specified assessment Uuid.
+      parameters:
+        - in: path
+          name: uuid
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 6a60093f-87f5-48b6-b82b-3fe308e26f4e
+          description: The uuid of the assessment to download.
+      responses:
+        '200':
+          description: A PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '204':
+          description: Content not found
         '404':
           description: Assessment not found
           content:

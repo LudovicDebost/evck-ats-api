@@ -425,6 +425,16 @@ paths:
               schema:
                 type: string
                 format: binary
+        '409':
+          description: Assessment is not ready for report generation, it must be completed by a checker.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Cannot generate report: the assessment is not yet eligible."
         '404':
           description: Assessment not found
           content:

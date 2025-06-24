@@ -1,7 +1,12 @@
 openapi: 3.0.0
 info:
   title: EveryCheck ATS
-  description: This API allows integration with Applicant Tracking Systems (ATS) to manage job applications, retrieve assessment records, and download related documents.
+  description: >
+      This API allows integration with Applicant Tracking Systems (ATS) to manage job applications, retrieve assessment records, and download related documents.
+      
+      #### Authentication
+      
+      This API requires authentication using an API key. Add your API key to every request in the HTTP header `X-Auth-Token`.
   version: 1.0.0
   contact:
     email: contact@everycheck.fr

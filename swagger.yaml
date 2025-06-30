@@ -216,6 +216,8 @@ servers:
     description: Production server
   - url: https://monespace-public.everycheck.com/api/ats
     description: Sandbox server
+  - url: https://monespace.everycheck.info/api/ats
+    description: DEV server (internal)
   - url: https://monespace-qa.everycheck.info/api/ats
     description: QA server (internal)
   - url: http://localhost:8000/api/ats

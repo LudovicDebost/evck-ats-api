@@ -242,7 +242,7 @@ paths:
                 file:
                   type: string
                   format: binary
-                  description: PDF file, 10MB max
+                  description: PDF file, 8MB max
                 email:
                   type: string
                   format: email
